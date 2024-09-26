@@ -95,7 +95,7 @@ def calcular_parametros(gen1, gen2, carga):
         return [ecuacion1, ecuacion2, ecuacion3, ecuacion4, ecuacion5, ecuacion6]
 
     VT_init = gen1.Vnom  # Tensión nominal como valor inicial
-    IA_init = gen1.Snom / gen1.Vnom  # Corriente nominal como valor inicial
+    IA_init = gen1.Snom / (gen1.Vnom * np.sqrt(gen1.fpnom*2 + (1 - gen1.fpnom*2)))
     delta_init = 0.1  # Pequeño ángulo inicial en radianes
 
     vars_iniciales = [VT_init, IA_init, 0.0, IA_init, 0.0, delta_init]
@@ -119,10 +119,10 @@ def calcular_parametros(gen1, gen2, carga):
 
     omega_sinc = 2 * np.pi * gen1.fsc / gen1.num_polos
 
-    P1 = np.real(S1)
-    Q1 = np.imag(S1)
-    P2 = np.real(S2)
-    Q2 = np.imag(S2)
+    P1 = np.abs(S1) * gen1.fpnom
+    Q1 = np.abs(S1) * np.sqrt(1 - gen1.fpnom**2)
+    P2 = np.abs(S2) * gen2.fpnom
+    Q2 = np.abs(S2) * np.sqrt(1 - gen2.fpnom**2)
     PL = np.real(SL)
     QL = np.imag(SL)
 
