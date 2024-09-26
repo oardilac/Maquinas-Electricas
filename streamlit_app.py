@@ -212,36 +212,63 @@ def mostrar_resultados(resultados):
 
 
 def graficar_curvas_mag(gen1, gen2, resultados):
-    fig, ax = plt.subplots(figsize=(8, 6))
-    ax.plot(gen1.curva_mag_IF, gen1.curva_mag_EA, label="Generador 1")
-    EA1_op = gen1.interpolar_EA(gen1.IF_oper)
-    ax.plot(gen1.IF_oper, EA1_op, "ro", label="Operación G1")
-    ax.plot(gen2.curva_mag_IF, gen2.curva_mag_EA, label="Generador 2")
-    EA2_op = gen2.interpolar_EA(gen2.IF_oper)
-    ax.plot(gen2.IF_oper, EA2_op, "go", label="Operación G2")
-    ax.set_title("Curvas de Magnetización")
-    ax.set_xlabel("Corriente de Campo IF (A)")
-    ax.set_ylabel("FEM Interna EA (V)")
-    ax.legend()
-    ax.grid(True)
-    st.pyplot(fig)
+    # Crear dos columnas
+    col1, col2 = st.columns(2)
+    
+    # Primera gráfica en la primera columna (Generador 1)
+    with col1:
+        fig1, ax1 = plt.subplots(figsize=(12, 8))
+        ax1.plot(gen1.curva_mag_IF, gen1.curva_mag_EA, label="Generador 1")
+        EA1_op = gen1.interpolar_EA(gen1.IF_oper)
+        ax1.plot(gen1.IF_oper, EA1_op, "ro", label="Operación G1")
+        ax1.set_title("Curva de Magnetización - Generador 1")
+        ax1.set_xlabel("Corriente de Campo IF (A)")
+        ax1.set_ylabel("FEM Interna EA (V)")
+        ax1.legend()
+        ax1.grid(True)
+        st.pyplot(fig1)
+    
+    # Segunda gráfica en la segunda columna (Generador 2)
+    with col2:
+        fig2, ax2 = plt.subplots(figsize=(12, 8))
+        ax2.plot(gen2.curva_mag_IF, gen2.curva_mag_EA, label="Generador 2")
+        EA2_op = gen2.interpolar_EA(gen2.IF_oper)
+        ax2.plot(gen2.IF_oper, EA2_op, "go", label="Operación G2")
+        ax2.set_title("Curva de Magnetización - Generador 2")
+        ax2.set_xlabel("Corriente de Campo IF (A)")
+        ax2.set_ylabel("FEM Interna EA (V)")
+        ax2.legend()
+        ax2.grid(True)
+        st.pyplot(fig2)
 
 
 def graficar_curvas_capacidad(gen1, gen2, resultados):
     fig, ax = plt.subplots(figsize=(8, 6))
-    S_max1 = gen1.Snom
+    
+    # Generador 1
+    S_max1 = gen1.Snom / 1000  # Convertir Snom a kilovatios
     Q1 = np.linspace(-S_max1, S_max1, 100)
     P1 = np.sqrt(S_max1**2 - Q1**2)
-    ax.plot(P1, Q1, label="Generador 1")
-    ax.plot(resultados["P1 (W)"], resultados["Q1 (VAR)"], "ro", label="Operación G1")
-    S_max2 = gen2.Snom
+    
+    # Invertir los ejes y cambiar a kW
+    ax.plot(Q1, P1, label="Generador 1")
+    ax.plot(resultados["Q1 (VAR)"] / 1000, resultados["P1 (W)"] / 1000, "ro", label="Operación G1")  # Convertir datos a kW
+    
+    # Generador 2
+    S_max2 = gen2.Snom / 1000  # Convertir Snom a kilovatios
     Q2 = np.linspace(-S_max2, S_max2, 100)
     P2 = np.sqrt(S_max2**2 - Q2**2)
-    ax.plot(P2, Q2, label="Generador 2")
-    ax.plot(resultados["P2 (W)"], resultados["Q2 (VAR)"], "go", label="Operación G2")
+    
+    # Invertir los ejes y cambiar a kW
+    ax.plot(Q2, P2, label="Generador 2")
+    ax.plot(resultados["Q2 (VAR)"] / 1000, resultados["P2 (W)"] / 1000, "go", label="Operación G2")  # Convertir datos a kW
+    
+    # Títulos y etiquetas ajustadas
     ax.set_title("Curvas de Capacidad")
-    ax.set_xlabel("Potencia Activa P (W)")
-    ax.set_ylabel("Potencia Reactiva Q (VAR)")
+    ax.set_xlabel("Potencia Reactiva Q (kVAR)")
+    ax.set_ylabel("Potencia Activa P (kW)")
+    
+    # Leyenda y grid
     ax.legend()
     ax.grid(True)
     st.pyplot(fig)
