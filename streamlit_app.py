@@ -138,6 +138,11 @@ def calcular_parametros(gen1, gen2, carga):
     PCu2 = (IA2_re_sol**2 + IA2_im_sol**2) * gen2.RA
     PCu_total = PCu1 + PCu2
 
+    # Calculamos la potencia activa neta, restando las pérdidas
+    P1_neta = P1 - (gen1.Pnuc + gen1.Pfyr + gen1.Pmisc)
+    P2_neta = P2 - (gen2.Pnuc + gen2.Pfyr + gen2.Pmisc)
+
+
     resultados = {
         "VT (V)": VT_sol,
         "IA1 (A)": np.abs(IA1),
@@ -145,10 +150,10 @@ def calcular_parametros(gen1, gen2, carga):
         "IL (A)": np.abs(IL),
         "IF1 (A)": gen1.IF_oper,
         "IF2 (A)": gen2.IF_oper,
-        "P1 (W)": P1,
+        "P1 (W)": P1_neta,
         "Q1 (VAR)": Q1,
         "S1 (VA)": np.abs(S1),
-        "P2 (W)": P2,
+        "P2 (W)": P2_neta,
         "Q2 (VAR)": Q2,
         "S2 (VA)": np.abs(S2),
         "PL (W)": PL,
