@@ -289,45 +289,43 @@ def main():
         "Capacidad del Motor Primario Pmotor1 (W)", value=500.0, format="%.2f"
     )
 
-    # Entrada de parámetros para el Generador 2
+    # Entrada de parámetros para el Generador 2 (valores distintos)
     st.sidebar.subheader("Generador 2")
     RA2 = st.sidebar.number_input(
-        "Resistencia de Armadura RA2 (Ω)", value=0.01, format="%.5f"
+        "Resistencia de Armadura RA2 (Ω)", value=0.02, format="%.5f"
     )
     XS2 = st.sidebar.number_input(
-        "Reactancia Síncrona XS2 (Ω)", value=1.0, format="%.5f"
+        "Reactancia Síncrona XS2 (Ω)", value=1.5, format="%.5f"
     )
     Snom2 = st.sidebar.number_input(
-        "Potencia Nominal Snom2 (VA)", value=100000.0, format="%.2f"
+        "Potencia Nominal Snom2 (VA)", value=150000.0, format="%.2f"
     )
     Vnom2 = st.sidebar.number_input(
-        "Tensión Nominal Vnom2 (V)", value=400.0, format="%.2f"
+        "Tensión Nominal Vnom2 (V)", value=380.0, format="%.2f"
     )
     fpnom2 = st.sidebar.number_input(
-        "Factor de Potencia Nominal fpnom2", value=0.85, format="%.2f"
+        "Factor de Potencia Nominal fpnom2", value=0.9, format="%.2f"
     )
     num_polos2 = st.sidebar.number_input(
-        "Número de Polos Generador 2", min_value=2, step=2, value=4
+        "Número de Polos Generador 2", min_value=2, step=2, value=6
     )
-    curva_mag_IF1_list = [0, 10, 20, 30, 40, 50]
-    curva_mag_EA1_list = [0, 100, 200, 300, 400, 500]
     fsc2 = st.sidebar.number_input(
-        "Frecuencia sin carga fsc2 (Hz)", value=60.0, format="%.2f"
+        "Frecuencia sin carga fsc2 (Hz)", value=50.0, format="%.2f"
     )
     IF_oper2 = st.sidebar.number_input(
-        "Corriente de Campo en Operación IF2 (A)", value=25.0, format="%.2f"
+        "Corriente de Campo en Operación IF2 (A)", value=30.0, format="%.2f"
     )
     Pnuc2 = st.sidebar.number_input(
-        "Pérdidas en el Núcleo Pnuc2 (W)", value=100.0, format="%.2f"
+        "Pérdidas en el Núcleo Pnuc2 (W)", value=120.0, format="%.2f"
     )
     Pfyr2 = st.sidebar.number_input(
-        "Pérdidas por Fricción y Ventilación Pfyr2 (W)", value=50.0, format="%.2f"
+        "Pérdidas por Fricción y Ventilación Pfyr2 (W)", value=60.0, format="%.2f"
     )
     Pmisc2 = st.sidebar.number_input(
-        "Pérdidas Misceláneas Pmisc2 (W)", value=20.0, format="%.2f"
+        "Pérdidas Misceláneas Pmisc2 (W)", value=30.0, format="%.2f"
     )
     Pmotor2 = st.sidebar.number_input(
-        "Capacidad del Motor Primario Pmotor2 (W)", value=500.0, format="%.2f"
+        "Capacidad del Motor Primario Pmotor2 (W)", value=700.0, format="%.2f"
     )
 
     st.sidebar.header("Parámetros de la Carga")
