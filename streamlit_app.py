@@ -337,8 +337,8 @@ def main():
         "Reactancia de Carga X_load (Ω)", value=30.0, format="%.2f"
     )
 
-    curva_mag_IF1_list = [0, 10, 20, 30, 40, 50]
-    curva_mag_EA1_list = [0, 100, 200, 300, 400, 500]
+    curva_mag_IF1_list = np.linspace(0, 100, 50)
+    curva_mag_EA1_list = 0.1 * curva_mag_IF1_list**1.5 
 
     try:
         gen1 = Generador(
