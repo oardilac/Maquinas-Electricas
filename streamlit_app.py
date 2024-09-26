@@ -83,25 +83,21 @@ def calcular_parametros(gen1, gen2, carga):
         EA2 = gen2.interpolar_EA(gen2.IF_oper)  # IF2 = IF_oper2
 
         # Ecuaciones para el Generador 1
-        # EA1 ∠ delta = VT + IA1 * (RA1 + j XS1)
         EA1_phasor = EA1 * np.exp(1j * delta)
         ecuacion1 = np.real(EA1_phasor) - (VT + IA1_re * gen1.RA - IA1_im * gen1.XS)
         ecuacion2 = np.imag(EA1_phasor) - (IA1_re * gen1.XS + IA1_im * gen1.RA)
 
         # Ecuaciones para el Generador 2
-        # EA2 ∠ delta = VT + IA2 * (RA2 + j XS2)
         EA2_phasor = EA2 * np.exp(1j * delta)
         ecuacion3 = np.real(EA2_phasor) - (VT + IA2_re * gen2.RA - IA2_im * gen2.XS)
         ecuacion4 = np.imag(EA2_phasor) - (IA2_re * gen2.XS + IA2_im * gen2.RA)
 
         # Balance de corrientes
-        # IA1 + IA2 = IL
         ecuacion5 = IA1_re + IA2_re - IL_re
         ecuacion6 = IA1_im + IA2_im - IL_im
 
         return [ecuacion1, ecuacion2, ecuacion3, ecuacion4, ecuacion5, ecuacion6]
 
-    # Valores iniciales para la solución (VT, IA1_re, IA1_im, IA2_re, IA2_im, delta)
     VT_init = gen1.Vnom  # Tensión nominal como valor inicial
     IA_init = gen1.Snom / gen1.Vnom  # Corriente nominal como valor inicial
     delta_init = 0.1  # Pequeño ángulo inicial en radianes
@@ -109,9 +105,7 @@ def calcular_parametros(gen1, gen2, carga):
     vars_iniciales = [VT_init, IA_init, 0.0, IA_init, 0.0, delta_init]
 
     # Resolver el sistema de ecuaciones usando fsolve
-    solucion, info, ier, mesg = fsolve(
-        sistema_ecuaciones, vars_iniciales, full_output=True
-    )
+    solucion, info, ier, mesg = fsolve(sistema_ecuaciones, vars_iniciales, full_output=True)
 
     if ier != 1:
         raise ValueError(f"No se pudo converger: {mesg}")
@@ -119,25 +113,14 @@ def calcular_parametros(gen1, gen2, carga):
     # Extraer las variables solucionadas
     VT_sol, IA1_re_sol, IA1_im_sol, IA2_re_sol, IA2_im_sol, delta_sol = solucion
 
-    # Calcular IL (se puede recalcular para verificar)
     IL = (IA1_re_sol + IA2_re_sol) + 1j * (IA1_im_sol + IA2_im_sol)
-
-    # Calcular Potencias
-    # Potencia por generador: S = VT * IA * conjugado
     IA1 = IA1_re_sol + 1j * IA1_im_sol
     IA2 = IA2_re_sol + 1j * IA2_im_sol
-    IL = IA1 + IA2
 
     S1 = VT_sol * np.conj(IA1)
     S2 = VT_sol * np.conj(IA2)
     SL = VT_sol * np.conj(IL)
 
-    # Calcular ángulo de par (delta)
-    # Ya está calculado como delta_sol
-
-    # Calcular Torques
-    # Torque inducido: Tind = P / omega_sinc
-    # Velocidad síncrona: omega_sinc = 2 * pi * fe / p
     omega_sinc = 2 * np.pi * gen1.fsc / gen1.num_polos
 
     P1 = np.real(S1)
@@ -151,25 +134,21 @@ def calcular_parametros(gen1, gen2, carga):
     Tind2 = P2 / omega_sinc
     Tind_total = Tind1 + Tind2
 
-    # Torque aplicado por los motores primarios
-    Tap = (gen1.Pmotor + gen2.Pmotor) / omega_sinc  # Suma de capacidades
+    Tap = (gen1.Pmotor + gen2.Pmotor) / omega_sinc
 
-    # Frecuencia eléctrica
     fe = gen1.fsc  # Frecuencia sin carga ajustada
 
-    # Pérdidas en cobre
     PCu1 = (IA1_re_sol**2 + IA1_im_sol**2) * gen1.RA
     PCu2 = (IA2_re_sol**2 + IA2_im_sol**2) * gen2.RA
     PCu_total = PCu1 + PCu2
 
-    # Compilar resultados
     resultados = {
         "VT (V)": VT_sol,
         "IA1 (A)": np.abs(IA1),
         "IA2 (A)": np.abs(IA2),
         "IL (A)": np.abs(IL),
-        "IF1 (A)": gen1.IF_oper,  # Simplificación
-        "IF2 (A)": gen2.IF_oper,  # Simplificación
+        "IF1 (A)": gen1.IF_oper,
+        "IF2 (A)": gen2.IF_oper,
         "P1 (W)": P1,
         "Q1 (VAR)": Q1,
         "S1 (VA)": np.abs(S1),
@@ -194,24 +173,51 @@ def calcular_parametros(gen1, gen2, carga):
     return resultados
 
 
-def graficar_curvas_mag(gen1, gen2, resultados):
+def mostrar_resultados(resultados):
     """
-    Grafica las curvas de magnetización de ambos generadores y muestra el punto de operación.
+    Muestra los resultados de manera estética en la interfaz.
     """
-    fig, ax = plt.subplots(figsize=(8, 6))
+    st.header("Resultados de Cálculos")
 
-    # Curva de Magnetización Generador 1
+    # Organizando en dos columnas
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.subheader("Parámetros Eléctricos")
+        st.write(f"**Tensión Terminal (VT)**: {resultados['VT (V)']:.2f} V")
+        st.write(f"**Corriente IA1**: {resultados['IA1 (A)']:.2f} A")
+        st.write(f"**Corriente IA2**: {resultados['IA2 (A)']:.2f} A")
+        st.write(f"**Corriente de Carga IL**: {resultados['IL (A)']:.2f} A")
+        st.write(f"**Corriente de Campo IF1**: {resultados['IF1 (A)']:.2f} A")
+        st.write(f"**Corriente de Campo IF2**: {resultados['IF2 (A)']:.2f} A")
+    
+    with col2:
+        st.subheader("Potencias")
+        st.write(f"**Potencia Activa P1**: {resultados['P1 (W)']:.2f} W")
+        st.write(f"**Potencia Reactiva Q1**: {resultados['Q1 (VAR)']:.2f} VAR")
+        st.write(f"**Potencia Aparente S1**: {resultados['S1 (VA)']:.2f} VA")
+        st.write(f"**Potencia Activa P2**: {resultados['P2 (W)']:.2f} W")
+        st.write(f"**Potencia Reactiva Q2**: {resultados['Q2 (VAR)']:.2f} VAR")
+        st.write(f"**Potencia Aparente S2**: {resultados['S2 (VA)']:.2f} VA")
+
+    st.divider()
+
+    st.subheader("Otros Parámetros")
+    st.write(f"**Frecuencia Eléctrica (fe)**: {resultados['fe (Hz)']:.2f} Hz")
+    st.write(f"**Ángulo del Par (delta)**: {resultados['delta (rad)']:.4f} rad")
+    st.write(f"**Torque Inducido Total**: {resultados['Tind_total (Nm)']:.2f} Nm")
+    st.write(f"**Torque Aplicado (Tap)**: {resultados['Tap (Nm)']:.2f} Nm")
+    st.write(f"**Pérdidas en Cobre Totales**: {resultados['PCu_total (W)']:.2f} W")
+
+
+def graficar_curvas_mag(gen1, gen2, resultados):
+    fig, ax = plt.subplots(figsize=(8, 6))
     ax.plot(gen1.curva_mag_IF, gen1.curva_mag_EA, label="Generador 1")
-    # Punto de Operación Generador 1
     EA1_op = gen1.interpolar_EA(gen1.IF_oper)
     ax.plot(gen1.IF_oper, EA1_op, "ro", label="Operación G1")
-
-    # Curva de Magnetización Generador 2
     ax.plot(gen2.curva_mag_IF, gen2.curva_mag_EA, label="Generador 2")
-    # Punto de Operación Generador 2
     EA2_op = gen2.interpolar_EA(gen2.IF_oper)
     ax.plot(gen2.IF_oper, EA2_op, "go", label="Operación G2")
-
     ax.set_title("Curvas de Magnetización")
     ax.set_xlabel("Corriente de Campo IF (A)")
     ax.set_ylabel("FEM Interna EA (V)")
@@ -221,27 +227,17 @@ def graficar_curvas_mag(gen1, gen2, resultados):
 
 
 def graficar_curvas_capacidad(gen1, gen2, resultados):
-    """
-    Grafica las curvas de capacidad de ambos generadores y muestra el punto de operación.
-    """
     fig, ax = plt.subplots(figsize=(8, 6))
-
-    # Curva de Capacidad Generador 1
     S_max1 = gen1.Snom
     Q1 = np.linspace(-S_max1, S_max1, 100)
     P1 = np.sqrt(S_max1**2 - Q1**2)
     ax.plot(P1, Q1, label="Generador 1")
-    # Punto de Operación Generador 1
     ax.plot(resultados["P1 (W)"], resultados["Q1 (VAR)"], "ro", label="Operación G1")
-
-    # Curva de Capacidad Generador 2
     S_max2 = gen2.Snom
     Q2 = np.linspace(-S_max2, S_max2, 100)
     P2 = np.sqrt(S_max2**2 - Q2**2)
     ax.plot(P2, Q2, label="Generador 2")
-    # Punto de Operación Generador 2
     ax.plot(resultados["P2 (W)"], resultados["Q2 (VAR)"], "go", label="Operación G2")
-
     ax.set_title("Curvas de Capacidad")
     ax.set_xlabel("Potencia Activa P (W)")
     ax.set_ylabel("Potencia Reactiva Q (VAR)")
@@ -252,7 +248,6 @@ def graficar_curvas_capacidad(gen1, gen2, resultados):
 
 def main():
     st.title("Análisis de Generadores Síncronos en Paralelo")
-
     st.sidebar.header("Parámetros de los Generadores")
 
     # Entrada de parámetros para el Generador 1
@@ -342,78 +337,28 @@ def main():
     X_load = st.sidebar.number_input(
         "Reactancia de Carga X_load (Ω)", value=30.0, format="%.2f"
     )
-
-    # Crear objetos Generador y Carga
     try:
         gen1 = Generador(
-            RA1,
-            XS1,
-            Snom1,
-            Vnom1,
-            fpnom1,
-            num_polos1,
-            curva_mag_IF1_list,
-            curva_mag_EA1_list,
-            fsc1,
-            IF_oper1,
-            Pnuc1,
-            Pfyr1,
-            Pmisc1,
-            Pmotor1,
+            RA1, XS1, Snom1, Vnom1, fpnom1, num_polos1,
+            curva_mag_IF1_list, curva_mag_EA1_list, fsc1, IF_oper1, Pnuc1, Pfyr1, Pmisc1, Pmotor1
         )
         gen2 = Generador(
-            RA2,
-            XS2,
-            Snom2,
-            Vnom2,
-            fpnom2,
-            num_polos2,
-            curva_mag_IF1_list,
-            curva_mag_EA1_list,
-            fsc2,
-            IF_oper2,
-            Pnuc2,
-            Pfyr2,
-            Pmisc2,
-            Pmotor2,
+            RA2, XS2, Snom2, Vnom2, fpnom2, num_polos2,
+            curva_mag_IF1_list, curva_mag_EA1_list, fsc2, IF_oper2, Pnuc2, Pfyr2, Pmisc2, Pmotor2
         )
-
         carga = Carga(R_load, X_load)
     except Exception as e:
         st.error(f"Error en la entrada de datos: {e}")
         st.stop()
 
-    # Botón para calcular
     if st.button("Calcular"):
         try:
             resultados = calcular_parametros(gen1, gen2, carga)
-
-            # Mostrar Resultados
-            st.header("Resultados de Cálculos")
-            for clave, valor in resultados.items():
-                if "rad" in clave:
-                    st.write(f"**{clave}**: {valor:.4f} rad")
-                elif (
-                    "Hz" in clave
-                    or "V" in clave
-                    or "A" in clave
-                    or "W" in clave
-                    or "VAR" in clave
-                    or "VA" in clave
-                    or "Nm" in clave
-                ):
-                    st.write(f"**{clave}**: {valor:.2f}")
-                else:
-                    st.write(f"**{clave}**: {valor}")
-
-            # Graficar Curvas de Magnetización
+            mostrar_resultados(resultados)
             st.header("Curvas de Magnetización")
             graficar_curvas_mag(gen1, gen2, resultados)
-
-            # Graficar Curvas de Capacidad
             st.header("Curvas de Capacidad")
             graficar_curvas_capacidad(gen1, gen2, resultados)
-
         except Exception as e:
             st.error(f"Ocurrió un error durante los cálculos: {e}")
 
