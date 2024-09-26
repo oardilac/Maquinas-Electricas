@@ -73,7 +73,7 @@ def calcular_parametros(gen1, gen2, carga):
         IA2 = IA2_re + 1j * IA2_im
 
         # Corriente de carga calculada correctamente
-        Z_load = carga.R_load + 1j * carga.X_load
+        Z_load = 1 / (1 / carga.R_load + 1 / (1j * carga.X_load))
         IL = VT_complex / Z_load
         IL_re = IL.real
         IL_im = IL.imag
