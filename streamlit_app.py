@@ -68,10 +68,6 @@ def calcular_parametros(gen1, gen2, carga):
         # Tensión terminal en forma de phasor (ángulo 0)
         VT_complex = VT  # VT ∠ 0°
 
-        # Corrientes de armadura en phasor
-        IA1 = IA1_re + 1j * IA1_im
-        IA2 = IA2_re + 1j * IA2_im
-
         # Corriente de carga calculada correctamente
         Z_load = 1 / (1 / carga.R_load + 1 / (1j * carga.X_load))
         IL = VT_complex / Z_load
@@ -335,6 +331,10 @@ def main():
     X_load = st.sidebar.number_input(
         "Reactancia de Carga X_load (Ω)", value=30.0, format="%.2f"
     )
+
+    curva_mag_IF1_list = [0, 10, 20, 30, 40, 50]
+    curva_mag_EA1_list = [0, 100, 200, 300, 400, 500]
+
     try:
         gen1 = Generador(
             RA1, XS1, Snom1, Vnom1, fpnom1, num_polos1,
